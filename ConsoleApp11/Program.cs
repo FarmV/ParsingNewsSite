@@ -15,12 +15,6 @@ namespace Home.Project.PasingNewSSite
             List<Parsing.DicResultTags> result = Parsing.GetAsyncWebSitesResult();
             Parsing.Print.PrintConsole(result);
             Console.ReadLine();
-            // string a = Parsing.GetHTTPSTeetString("https://metanit.com/");
-            // Console.WriteLine(a);
-
-
-
-            //Console.ReadLine();
 
 
         }
@@ -131,45 +125,7 @@ namespace Home.Project.PasingNewSSite
             return websites;
         }
 
-        //public static string GetHTTPSTeet(string Site)
-        //{
 
-
-        //        using HttpClient client = new HttpClient();
-        //        try
-        //        {
-        //            Task<HttpResponseMessage> response = client.GetAsync(Site);
-        //            response.Wait();
-        //            //HttpResponseMessage response = await client.GetAsync(WebsAndTagsBase.ListWebSites[index]);
-        //            response.Result.EnsureSuccessStatusCode();
-
-        //            Task<string> getString  = response.Result.Content.ReadAsStringAsync();
-        //            getString.Wait();
-        //            string result = getString.Result;
-        //            return result;
-
-        //        }
-        //         catch (HttpRequestException ex)
-        //        {
-
-        //          return ex.Message;
-        //        }
-        //         catch (Exception e)
-        //        {
-
-        //         return e.Message;
-        //        }               
-        //}
-        //public static string GetHTTPSTeetString(string Site)
-        //{
-        //    Uri uriSiteListPath = new Uri(Site);
-        //    System.Net.WebClient oWebClient = new System.Net.WebClient();
-        //    oWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0");
-        //    string strStationList = oWebClient.DownloadString(uriSiteListPath);
-
-        //    return strStationList;
-
-        //}
         private async static Task<string[]> GetHTTPStack()
         {
            
@@ -197,28 +153,6 @@ namespace Home.Project.PasingNewSSite
 
 
 
-        //private async static Task<string[]> GetHTTPStack1()
-        //{
-
-        //    string[] MyWebSites = new string[WebsAndTagsBase.ListWebSites.Count];
-        //    for (int index = 0; index < WebsAndTagsBase.ListWebSites.Count; index++)
-        //    {
-        //        using HttpClient client = new HttpClient();
-        //        try
-        //        {
-        //            HttpResponseMessage response = await client.GetAsync(WebsAndTagsBase.ListWebSites[index]);
-        //            response.EnsureSuccessStatusCode();
-        //            string responseBody = await response.Content.ReadAsStringAsync();
-        //            MyWebSites[index] = responseBody;
-
-        //        }
-        //        catch
-        //        {
-        //            MyWebSites[index] = "";
-        //        }
-        //    }
-        //    return MyWebSites;
-        //}
 
      
 
