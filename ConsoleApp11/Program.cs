@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Home.Project.PasingNewSSite
 {
-
+    
     class MyAction
     {
         public static void Main()
@@ -118,43 +119,43 @@ namespace Home.Project.PasingNewSSite
 
         private static string[] GetAsyncWeb()
         {
-            Task<string[]> resultMasSting = GetHTTPStack();
-            resultMasSting.Wait();
+            string[] resultMasSting = GetHTTPStack();
             string[] websites = new string[WebsAndTagsBase.ListWebSites.Count];
-            websites = resultMasSting.Result;
+            websites = resultMasSting;
             return websites;
         }
 
 
-        private async static Task<string[]> GetHTTPStack()
+        private static string[] GetHTTPStack()
         {
-           
-
-
             string[] MyWebSites = new string[WebsAndTagsBase.ListWebSites.Count];
-            for (int index = 0; index < WebsAndTagsBase.ListWebSites.Count; index++)
+
+            Parallel.For(0, WebsAndTagsBase.ListWebSites.Count, (i, state) =>
             {
+
                 try
                 {
                     using HttpClient client = new HttpClient();
                     System.Net.WebClient oWebClient = new System.Net.WebClient();
                     oWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0");
-                    Uri uriSiteListPath = new Uri(WebsAndTagsBase.ListWebSites[index]);
+                    Uri uriSiteListPath = new Uri(WebsAndTagsBase.ListWebSites[i]);
                     string strStationList = oWebClient.DownloadString(uriSiteListPath);
-                    MyWebSites[index] = strStationList;
+                    MyWebSites[i] = strStationList;
                 }
                 catch
                 {
-                    MyWebSites[index] = "";
+                    MyWebSites[i] = "";
                 }
-            }
+            });
+ 
             return MyWebSites;
+
         }
 
 
 
 
-     
+
 
         public class Print
         {
