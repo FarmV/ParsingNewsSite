@@ -11,23 +11,10 @@ namespace Home.Project.PasingNewsSite
         public static void Main()
         {
 
-           Parsing.DicQueryGoogle resultSearch  = Parsing.GetSearchResult("Зарплата");
-           List<Parsing.WebSite> b = resultSearch.ResultWebRequest;
-
-
-
-            for (int i = 0; i < length; i++)
-            {
-
-            }
-
-
-
-
-
-           Console.ReadLine();
-
-
+           Parsing.DicQueryGoogle resultSearch = Parsing.GetSearchResult("новости");   
+           resultSearch.PrintConsole();
+          
+           Console.ReadLine();    
         }
     }
 }

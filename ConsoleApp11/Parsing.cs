@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Threading;
 using HtmlAgilityPack;
+using System.Collections.Concurrent;
 
 namespace Home.Project.PasingNewsSite
 {
@@ -13,46 +14,51 @@ namespace Home.Project.PasingNewsSite
     public partial class Parsing
     {
         private static string SearchQueryGoogle = "новости";
-        private readonly static string lentaGoogle = $"https://www.google.ru/search?q={SearchQueryGoogle}&lr=lang_ru&newwindow=1&tbs=lr:lang_1ru,qdr:d&tbm=nws&ei=dBrnYIrjCuHjrgSA0bXYCQ&start=00&sa=N&ved=2ahUKEwiK7Zzb5dPxAhXhsYsKHYBoDZsQ8tMDegQIBxBH&biw=1707&bih=888&dpr=1.5";
-        private static string[] GetWebBody()
+        // private static string lentaGoogle = $"https://www.google.ru/search?q={SearchQueryGoogle}&lr=lang_ru&newwindow=1&tbs=lr:lang_1ru,qdr:d&tbm=nws&ei=dBrnYIrjCuHjrgSA0bXYCQ&start=00&sa=N&ved=2ahUKEwiK7Zzb5dPxAhXhsYsKHYBoDZsQ8tMDegQIBxBH&biw=1707&bih=888&dpr=1.5";
+        
+        private static Task<string[]> GetWebBody()
         {
+            
+            //ConcurrentQueue<string[]> MyWebSites = new ConcurrentQueue<string[]>();
+
             string[] MyWebSites = new string[WebsAndTagsBase.ListWebSites.Count];
-
-            Stopwatch watch = new Stopwatch();
-
-            Parallel.For(0, WebsAndTagsBase.ListWebSites.Count, async (i, state) =>
+            
+           Stopwatch watch = new Stopwatch();
+            //SpinLock sl = new SpinLock();
+            watch.Start();
+            Task.WaitAll();
+            Parallel.For(0, WebsAndTagsBase.ListWebSites.Count, (i, state) =>
             {
-
-                try
-                {
-
-
-                    using HttpClient client = new HttpClient();
-                    using System.Net.WebClient oWebClient = new System.Net.WebClient();
-                    oWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0");
-                    Uri uriSiteListPath = new Uri(WebsAndTagsBase.ListWebSites[i]);
-
-                    string strStationList = oWebClient.DownloadString(uriSiteListPath);
-
-                    MyWebSites[i] = strStationList;
-                }
-                catch
-                {
-                    MyWebSites[i] = "";
-                }
-
-
-
+                
+                  Console.WriteLine($" Обработка сайт №{i} из {WebsAndTagsBase.ListWebSites.Count}");
+                  try
+                  {
+                      using System.Net.WebClient oWebClient = new System.Net.WebClient();
+                      oWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0");
+                      Uri uriSiteListPath = new Uri(WebsAndTagsBase.ListWebSites[i]);
+                 
+                      string strStationList = oWebClient.DownloadStringTaskAsync(uriSiteListPath).Result;
+                      
+                      MyWebSites[i] = strStationList;
+                 
+                  }
+                  catch
+                  {
+                      MyWebSites[i] = "";
+                  }
+                
             });
-
-            Console.WriteLine($"Время метода: {watch.Elapsed}");
-            return MyWebSites;
+            
+            watch.Stop();
+            Console.WriteLine(watch.Elapsed);
+            return Task.FromResult(MyWebSites);
 
         }
         private static string GetWebBody(string website)
         {
             try
             {
+
                 using System.Net.WebClient oWebClient = new System.Net.WebClient();
                 oWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0");
                 Uri uriSiteListPath = new Uri(website);
@@ -69,6 +75,7 @@ namespace Home.Project.PasingNewsSite
                     }
                     catch (System.Net.WebException ex)
                     {
+
                         Console.WriteLine($"{ex.Message}{Environment.NewLine}Слишком много запросов...(426?)");
                     }
                     catch
@@ -142,21 +149,24 @@ namespace Home.Project.PasingNewsSite
         }
         private static Task<List<string>> GetGcardUrl(string googlebody)
         {
-            Console.WriteLine("Получение url карточек новостей");
+            Console.WriteLine("Получение url карточек новостей со страницы");
 
-            List<string> gcarвurls = new List<string>();
+            List<string> gcardurl = new List<string>();
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(googlebody);
             HtmlNodeCollection result = doc.DocumentNode.SelectNodes("//g-card");
-
+            if (result == null)
+            {
+                return Task.FromResult(gcardurl);
+            }
             Parallel.ForEach(result, (node) =>
             {
                 HtmlNode res = node.SelectSingleNode(".//div//div//div[@class='dbsr']//a");
                 string siteurl = res.Attributes[1].Value;
-                gcarвurls.Add(siteurl);
+                gcardurl.Add(siteurl);
             });
 
-            return Task.FromResult(gcarвurls);
+            return Task.FromResult(gcardurl);
         }
         private static string MyStringReplaser(string googlestring)
         {
@@ -173,12 +183,12 @@ namespace Home.Project.PasingNewsSite
                 return result;
             }
             throw new Exception("Неверный формат строки");
-        }  
+        }
         public static DicQueryGoogle GetSearchResult(string search)
         {
             SearchQueryGoogle = search;
-
-            for (string mods = SearchQueryGoogle; ; mods = MyStringReplaser(mods))
+            string lentaGoogle = $"https://www.google.ru/search?q={SearchQueryGoogle}&lr=lang_ru&newwindow=1&tbs=lr:lang_1ru,qdr:d&tbm=nws&ei=dBrnYIrjCuHjrgSA0bXYCQ&start=00&sa=N&ved=2ahUKEwiK7Zzb5dPxAhXhsYsKHYBoDZsQ8tMDegQIBxBH&biw=1707&bih=888&dpr=1.5";
+            for (string mods = lentaGoogle; ; mods = MyStringReplaser(mods))
             {
 
                 string sitebody = GetWebBody(mods);
@@ -190,19 +200,23 @@ namespace Home.Project.PasingNewsSite
                 {
 
                     List<string> resultgcards = GetGcardUrl(sitebody).Result;
+                    if (resultgcards.Count == default)
+                    {
+                        break;
+                    }
                     WebsAndTagsBase.ListGcardWebUrl.AddRange(resultgcards);
 
                 }
                 catch (Exception ex)
                 {
                     // Console.WriteLine($"{ex.Message} + {ex.StackTrace}");
-                    
+
                     break;
                 }
 
             }
             WebsAndTagsBase.ListWebSites.AddRange(WebsAndTagsBase.ListGcardWebUrl);
-            List<WebSite> resultWebSite = GetAsyncWebSitesResult();
+            List<WebSite> resultWebSite = GetAsyncWebSitesResult().Result;
 
             DicQueryGoogle result = new DicQueryGoogle(resultWebSite);
 

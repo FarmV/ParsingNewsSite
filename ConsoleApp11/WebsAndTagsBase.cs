@@ -15,13 +15,13 @@ namespace Home.Project.PasingNewsSite
 
             public static List<string> ListWebSites = new List<string>()
             {
-             "https://mail.ru/",
-             "https://www.pochta.ru/",
-             "Невалид1",//test
-             "Невалид2",
-             "https://www.rbc.ru/crypto/news/60d374339a79475d1e47e43f",
-             "https://1prime.ru/finance/20210624/834018218.html",
-             "https://www.rbc.ru/"
+             //"https://mail.ru/",
+             //"https://www.pochta.ru/",
+             //"Невалид1",//test
+             //"Невалид2",
+             //"https://www.rbc.ru/crypto/news/60d374339a79475d1e47e43f",
+             //"https://1prime.ru/finance/20210624/834018218.html",
+             //"https://www.rbc.ru/"
             };
 
             public static Dictionary<string, int> PositiveTags = new Dictionary<string, int>()
