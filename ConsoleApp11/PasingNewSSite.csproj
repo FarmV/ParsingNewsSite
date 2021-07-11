@@ -4,7 +4,11 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>PasingNewSSite</AssemblyName>
-    <RootNamespace>Home.Project.PasingNewSSite</RootNamespace>
+    <RootNamespace>Home.Project.PasingNewsSite</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.34" />
+  </ItemGroup>
 
 </Project>
