@@ -14,45 +14,45 @@ namespace Home.Project.PasingNewsSite
     public partial class Parsing
     {
         private static string SearchQueryGoogle = "новости";
-        // private static string lentaGoogle = $"https://www.google.ru/search?q={SearchQueryGoogle}&lr=lang_ru&newwindow=1&tbs=lr:lang_1ru,qdr:d&tbm=nws&ei=dBrnYIrjCuHjrgSA0bXYCQ&start=00&sa=N&ved=2ahUKEwiK7Zzb5dPxAhXhsYsKHYBoDZsQ8tMDegQIBxBH&biw=1707&bih=888&dpr=1.5";
-        
+        private static readonly object Mylock = new object();   
         private static Task<string[]> GetWebBody()
         {
-            
-            //ConcurrentQueue<string[]> MyWebSites = new ConcurrentQueue<string[]>();
-
             string[] MyWebSites = new string[WebsAndTagsBase.ListWebSites.Count];
-            
-           Stopwatch watch = new Stopwatch();
-            //SpinLock sl = new SpinLock();
-            watch.Start();
-            Task.WaitAll();
-            Parallel.For(0, WebsAndTagsBase.ListWebSites.Count, (i, state) =>
+            Stopwatch watch = new Stopwatch();
+
+            void RefreshSync(int numbermass, string webbody)
             {
-                
-                  Console.WriteLine($" Обработка сайт №{i} из {WebsAndTagsBase.ListWebSites.Count}");
-                  try
-                  {
-                      using System.Net.WebClient oWebClient = new System.Net.WebClient();
-                      oWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0");
-                      Uri uriSiteListPath = new Uri(WebsAndTagsBase.ListWebSites[i]);
-                 
-                      string strStationList = oWebClient.DownloadStringTaskAsync(uriSiteListPath).Result;
-                      
-                      MyWebSites[i] = strStationList;
-                 
-                  }
-                  catch
-                  {
-                      MyWebSites[i] = "";
-                  }
-                
+                lock (Mylock)
+                {
+                    MyWebSites[numbermass] = webbody;
+                }
+            }
+            Console.WriteLine($"Начата обработка коллекции из {WebsAndTagsBase.ListWebSites.Count} сайтов");
+            watch.Start();
+            Parallel.For(0, WebsAndTagsBase.ListWebSites.Count, (i) =>
+            {
+
+                Console.WriteLine($"Обработка сайта №{i+1}");
+                try
+                {
+                    using System.Net.WebClient oWebClient = new System.Net.WebClient();
+                    oWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0");
+                    Uri uriSiteListPath = new Uri(WebsAndTagsBase.ListWebSites[i]);
+
+                    string strStationList = oWebClient.DownloadStringTaskAsync(uriSiteListPath).Result;
+                    RefreshSync(i, strStationList);
+
+
+                }
+                catch
+                {
+                    RefreshSync(i, "");
+                }
+
             });
-            
             watch.Stop();
             Console.WriteLine(watch.Elapsed);
             return Task.FromResult(MyWebSites);
-
         }
         private static string GetWebBody(string website)
         {
@@ -106,25 +106,39 @@ namespace Home.Project.PasingNewsSite
             WebSite myResult = new WebSite();
             if (SiteBody == "")
             {
-                myResult.NameSite = Name;
+                myResult.Url = Name;
                 myResult.IsValid = false;
                 return myResult;
             }
 
-            myResult.NameSite = Name;
+            myResult.Url = Name;
             string[] positiveTags = new string[WebsAndTagsBase.PositiveTags.Count];
             string[] negativeTags = new string[WebsAndTagsBase.NegativeTags.Count];
             WebsAndTagsBase.PositiveTags.Keys.CopyTo(positiveTags, 0);
             WebsAndTagsBase.NegativeTags.Keys.CopyTo(negativeTags, 0);
-
+            void UpdateSyncPos(int index,int count)
+            {
+                lock (Mylock)
+                {
+                    myResult.ResultPositiveTags[positiveTags[index]] = count;
+                }
+            }
+            void UpdateSyncNeg(int index, int count)
+            {
+                lock (Mylock)
+                {
+                    myResult.ResultNegativeTags[negativeTags[index]] = count;
+                }
+            }
             Parallel.Invoke(() =>
             {
-                Parallel.For(0, positiveTags.Length, (index, state) =>
+                Parallel.For(0, positiveTags.Length, (index) =>
                 {
                     Regex myregex = new Regex($@"{positiveTags[index]}(\w*)", RegexOptions.IgnoreCase);
                     MatchCollection mymatches = myregex.Matches(SiteBody);
 
-                    myResult.ResultPositiveTags[positiveTags[index]] = mymatches.Count;
+                   // myResult.ResultPositiveTags[positiveTags[index]] = mymatches.Count;
+                    UpdateSyncPos(index, mymatches.Count);
 
                 });
 
@@ -132,14 +146,14 @@ namespace Home.Project.PasingNewsSite
 
             () =>
             {
-                Parallel.For(0, negativeTags.Length, (i, state) =>
+                Parallel.For(0, negativeTags.Length, (i) =>
                 {
 
                     Regex myregex = new Regex($@"{negativeTags[i]}(\w*)", RegexOptions.IgnoreCase);
                     MatchCollection mymatches = myregex.Matches(SiteBody);
 
-                    myResult.ResultNegativeTags[negativeTags[i]] = mymatches.Count;
-
+                   // myResult.ResultNegativeTags[negativeTags[i]] = mymatches.Count;
+                    UpdateSyncPos(i, mymatches.Count);
                 });
 
             });
@@ -177,7 +191,7 @@ namespace Home.Project.PasingNewsSite
             foreach (Match item in regex.Matches(googlestring))
             {
                 Console.WriteLine($"{item.Groups[2]}");
-                string replacement = $"&start={(Convert.ToInt32(item.Groups[2].Value) + 10).ToString()}&sa";
+                string replacement = $"&start={Convert.ToInt32(item.Groups[2].Value) + 10}&sa";
                 string result = regex.Replace(googlestring, replacement);
                 Console.WriteLine("");
                 return result;

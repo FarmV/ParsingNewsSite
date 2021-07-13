@@ -25,7 +25,7 @@ namespace Home.Project.PasingNewsSite
                 {
                     if (Dic.IsValid == false)
                     {
-                        Console.WriteLine($"{Environment.NewLine}Url сайта: {Dic.NameSite}");
+                        Console.WriteLine($"{Environment.NewLine}Url сайта: {Dic.Url}");
                         Console.WriteLine($"Сайт загрузился:{Dic.IsValid}{Environment.NewLine}");
 
                     }
@@ -33,7 +33,7 @@ namespace Home.Project.PasingNewsSite
                     {
 
 
-                        Console.WriteLine($"{Environment.NewLine}Url сайта: {Dic.NameSite}");
+                        Console.WriteLine($"{Environment.NewLine}Url сайта: {Dic.Url}");
                         Console.WriteLine($"Сайт загрузился:{Dic.IsValid}{Environment.NewLine}");
                         Console.WriteLine($"Теги позитив:");
                         foreach (KeyValuePair<string, int> item in Dic.ResultPositiveTags)
@@ -57,7 +57,7 @@ namespace Home.Project.PasingNewsSite
                 ResultPositiveTags = new Dictionary<string, int>(WebsAndTagsBase.PositiveTags);
                 ResultNegativeTags = new Dictionary<string, int>(WebsAndTagsBase.NegativeTags);
             }
-            public string NameSite { get; set; }
+            public string Url { get; set; }
             public bool IsValid { get; set; }        
             public Dictionary<string, int> ResultPositiveTags { get; set; }
             public Dictionary<string, int> ResultNegativeTags { get; set; }
@@ -67,13 +67,13 @@ namespace Home.Project.PasingNewsSite
 
                 if (IsValid == false)
                 {
-                    Console.WriteLine($"{Environment.NewLine}Url сайта: {NameSite}");
+                    Console.WriteLine($"{Environment.NewLine}Url сайта: {Url}");
                     Console.WriteLine($"Сайт не был загружен:{IsValid}{Environment.NewLine}");
 
                 }
                 else
                 {
-                    Console.WriteLine($"{Environment.NewLine}Url сайта: {NameSite}");
+                    Console.WriteLine($"{Environment.NewLine}Url сайта: {Url}");
                     Console.WriteLine($"Сайт загружен:{IsValid}{Environment.NewLine}");
                     Console.WriteLine($"Теги позитив:");
                     foreach (KeyValuePair<string, int> item in ResultPositiveTags)
@@ -95,10 +95,10 @@ namespace Home.Project.PasingNewsSite
 
             List<WebSite> dicResultsWebsSites = new List<WebSite>();
             string[] siteBody = GetWebBody().Result;
-            Console.WriteLine("#####Обработка тегов на сайтах #####");
+            Console.WriteLine("##### Обработка тегов на сайтах #####");
             for (int i = 0; i < siteBody.Length; i++)
             {
-                Console.WriteLine($"Обрабатывается {i} их {siteBody.Length}");
+                Console.WriteLine($"Обрабатывается {i} из {siteBody.Length}");
                 WebSite site = GetKeyValuePairs(WebsAndTagsBase.ListWebSites[i], siteBody[i]);
                 dicResultsWebsSites.Add(site);
             }
