@@ -168,16 +168,17 @@ namespace Home.Project.PasingNewsSite
             List<string> gcardurl = new List<string>();
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(googlebody);
-            HtmlNodeCollection result = doc.DocumentNode.SelectNodes("//g-card");
+            HtmlNodeCollection result = doc.DocumentNode.SelectNodes("//g-card/div/div/a");
+
             if (result == null)
             {
                 return Task.FromResult(gcardurl);
             }
             Parallel.ForEach(result, (node) =>
             {
-                HtmlNode res = node.SelectSingleNode(".//div//div//div[@class='dbsr']//a");
-                string siteurl = res.Attributes[1].Value;
-                gcardurl.Add(siteurl);
+                var res = node.Attributes[1].Value;
+               
+                gcardurl.Add(res);
             });
 
             return Task.FromResult(gcardurl);
@@ -201,7 +202,8 @@ namespace Home.Project.PasingNewsSite
         public static DicQueryGoogle GetSearchResult(string search)
         {
             SearchQueryGoogle = search;
-            string lentaGoogle = $"https://www.google.ru/search?q={SearchQueryGoogle}&lr=lang_ru&newwindow=1&tbs=lr:lang_1ru,qdr:d&tbm=nws&ei=dBrnYIrjCuHjrgSA0bXYCQ&start=00&sa=N&ved=2ahUKEwiK7Zzb5dPxAhXhsYsKHYBoDZsQ8tMDegQIBxBH&biw=1707&bih=888&dpr=1.5";
+            string lentaGoogle = $"https://www.google.ru/search?q={SearchQueryGoogle}&newwindow=1&tbs=qdr:d&tbm=nws&ei=y2ldYufFONySwPAPwr-FmAQ&start=0&sa=N&ved=2ahUKEwin18_83Z33AhVcCRAIHcJfAUM4ChDy0wN6BAgBEDw&biw=1920&bih=1007&dpr=1";
+
             for (string mods = lentaGoogle; ; mods = MyStringReplaser(mods))
             {
 
