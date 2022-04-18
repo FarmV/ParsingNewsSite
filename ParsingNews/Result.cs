@@ -21,6 +21,21 @@ namespace Home.Project.PasingNewsSite
                 Console.WriteLine("");
                 Console.WriteLine($"Поисковый запрос: {WebRequest}{Environment.NewLine}");
                 Console.WriteLine("#####Результаты#####");
+
+                Console.WriteLine($"Всего сайтов найдено {ResultWebRequest.Count} из них смогло обработся {ResultWebRequest.Where(x => x.IsValid).Count()}");
+
+                List<KeyValuePair<string, int>> resSet = new List<KeyValuePair<string, int>>();
+                for (int i = 0; i < Program.query.Length; i++)
+                {
+                    var res1 = ResultWebRequest.Select(
+                     x => x.ResultPositiveTags).Select(x => new KeyValuePair<string, int>(Program.query[i], x[Program.query[i]])).ToArray();
+
+                    resSet.Add(new KeyValuePair<string, int>(res1[i].Key, res1.Select(x => x.Value).ToArray().Sum()));
+
+                }
+
+
+
                 foreach (WebSite Dic in ResultWebRequest)
                 {
                     if (Dic.IsValid == false)
@@ -35,17 +50,22 @@ namespace Home.Project.PasingNewsSite
 
                         Console.WriteLine($"{Environment.NewLine}Url сайта: {Dic.Url}");
                         Console.WriteLine($"Сайт загрузился:{Dic.IsValid}{Environment.NewLine}");
-                        Console.WriteLine($"Теги позитив:");
+                        Console.WriteLine($"Теги:");
                         foreach (KeyValuePair<string, int> item in Dic.ResultPositiveTags)
                         {
                             Console.WriteLine($"{item.Key} = {item.Value}");
                         }
-                        Console.WriteLine($"{Environment.NewLine}Теги негатив:");
-                        foreach (KeyValuePair<string, int> item in Dic.ResultNegativeTags)
-                        {
-                            Console.WriteLine($"{item.Key} = {item.Value}");
-                        }
+                        //Console.WriteLine($"{Environment.NewLine}Теги негатив:");
+                        //foreach (KeyValuePair<string, int> item in Dic.ResultNegativeTags)
+                        //{
+                        //    Console.WriteLine($"{item.Key} = {item.Value}");
+                        //}
                     }
+                }
+                Console.WriteLine(Environment.NewLine);
+                foreach(KeyValuePair<string, int> item in resSet)
+                {
+                    Console.WriteLine($"Вхождение по тегу {item.Key} кол-во {item.Value}");
                 }
             }
         }
@@ -58,7 +78,7 @@ namespace Home.Project.PasingNewsSite
                 ResultNegativeTags = new Dictionary<string, int>(WebsAndTagsBase.NegativeTags);
             }
             public string Url { get; set; }
-            public bool IsValid { get; set; }        
+            public bool IsValid { get; set; }
             public Dictionary<string, int> ResultPositiveTags { get; set; }
             public Dictionary<string, int> ResultNegativeTags { get; set; }
 
@@ -106,7 +126,7 @@ namespace Home.Project.PasingNewsSite
         }
 
 
-        
+
 
 
 
